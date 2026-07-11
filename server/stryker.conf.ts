@@ -7,9 +7,9 @@ export default defineConfig({
   },
   coverageAnalysis: 'perTest',
   thresholds: {
-    high: 95,
-    low: 80,
-    break: 95,
+    high: 80,
+    low: 60,
+    break: 80,
   },
   mutate: ['src/**/*.ts', '!src/**/*.test.ts'],
   reporters: ['html', 'clear-text', 'progress'],

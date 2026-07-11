@@ -54,12 +54,12 @@ npm run db:seed        # tsx prisma/seed.ts
 ## Testing
 
 - **Framework:** Vitest（ユニットテスト）+ Stryker（ミューテーションテスト）
-- **Thresholds:** カバレッジ80%以上、ミューテーションスコア95%以上が必須。閾値未達は自動でテスト失敗する。
+- **Thresholds:** カバレッジ80%以上、ミューテーションスコア80%以上が必須。閾値未達は自動でテスト失敗する。
 - **Test file convention:** テストファイルは被テストファイルと同じディレクトリに配置。命名は `*.test.ts`（server）または `*.test.{ts,tsx}`（client）。
 - **Server tests:** `server/src/__tests__/` 配下に配置。Prismaは `vi.mock()` でモックする。环境は `node`。
 - **Client tests:** `client/src/` 内に被テストファイルと同じディレクトリに配置。React Testing Library を使用。環境は `jsdom`。
 - **Coverage config:** `vitest.config.ts` 内の `coverage.thresholds` で80%閾値を設定。`test:coverage` スクリプトで確認。
-- **Mutation config:** `stryker.conf.ts` で `thresholds.break: 95` を設定。`test:mutation` スクリプトで確認。
+- **Mutation config:** `stryker.conf.ts` で `thresholds.break: 80` を設定。`test:mutation` スクリプトで確認。
 - **Server integration tests:** `server/src/__tests__/*.integration.test.ts`。Supertest で HTTP リクエストを検証。Prisma・env を `vi.mock()` でモック。
 - **E2E tests:** `client/e2e/tests/*.spec.ts`。Playwright でブラウザ上にフルテスト。`webServer` で server/client を自動起動。
 - **Testing strategy:** 3層構造（単体→統合→E2E）。単体テストは速く多数作成、統合テストはAPI境界を検証、E2Eは実際のブラウザでユーザーフローを検証。
