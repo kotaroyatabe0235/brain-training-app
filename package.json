@@ -1,0 +1,18 @@
+{
+  "name": "brain-training-app",
+  "private": true,
+  "description": "Brain Training App Monorepo",
+  "scripts": {
+    "prepare": "husky",
+    "test": "npm run test --workspaces",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "test:mutation": "npm run test:mutation --workspaces"
+  },
+  "devDependencies": {
+    "husky": "^9.1.0"
+  },
+  "workspaces": [
+    "client",
+    "server"
+  ]
+}

@@ -1,0 +1,80 @@
+#!/bin/sh
+
+echo "========================================="
+echo " pre-push: テスト・カバレッジ・ミューテーション確認"
+echo "========================================="
+echo ""
+
+FAILED=0
+
+# ---- Server ----
+echo "[Server] ユニットテスト実行中..."
+cd server && npm run test || FAILED=1
+cd ..
+
+if [ $FAILED -eq 1 ]; then
+  echo ""
+  echo "✗ Server ユニットテスト失敗。pushを中止します。"
+  exit 1
+fi
+
+echo ""
+echo "[Server] カバレッジ確認中..."
+cd server && npm run test:coverage || FAILED=1
+cd ..
+
+if [ $FAILED -eq 1 ]; then
+  echo ""
+  echo "✗ Server カバレッジ80%未達。pushを中止します。"
+  exit 1
+fi
+
+echo ""
+echo "[Server] ミューテーションテスト実行中..."
+cd server && npm run test:mutation || FAILED=1
+cd ..
+
+if [ $FAILED -eq 1 ]; then
+  echo ""
+  echo "✗ Server ミューテーションスコア95%未達。pushを中止します。"
+  exit 1
+fi
+
+# ---- Client ----
+echo ""
+echo "[Client] ユニットテスト実行中..."
+cd client && npm run test || FAILED=1
+cd ..
+
+if [ $FAILED -eq 1 ]; then
+  echo ""
+  echo "✗ Client ユニットテスト失敗。pushを中止します。"
+  exit 1
+fi
+
+echo ""
+echo "[Client] カバレッジ確認中..."
+cd client && npm run test:coverage || FAILED=1
+cd ..
+
+if [ $FAILED -eq 1 ]; then
+  echo ""
+  echo "✗ Client カバレッジ80%未達。pushを中止します。"
+  exit 1
+fi
+
+echo ""
+echo "[Client] ミューテーションテスト実行中..."
+cd client && npm run test:mutation || FAILED=1
+cd ..
+
+if [ $FAILED -eq 1 ]; then
+  echo ""
+  echo "✗ Client ミューテーションスコア95%未達。pushを中止します。"
+  exit 1
+fi
+
+echo ""
+echo "========================================="
+echo " 全テスト合格 ✓ pushを続行します"
+echo "========================================="

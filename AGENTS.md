@@ -2,7 +2,8 @@
 
 ## Structure
 
-Two independent packages (no monorepo manager, no root `package.json`):
+Monorepo with npm workspaces:
+- Root `package.json` manages workspaces and git hooks (Husky)
 - `client/` — React 19 + Vite + Tailwind CSS v4 + Zustand
 - `server/` — Express + Prisma + PostgreSQL
 
@@ -62,6 +63,7 @@ npm run db:seed        # tsx prisma/seed.ts
 - **Server integration tests:** `server/src/__tests__/*.integration.test.ts`。Supertest で HTTP リクエストを検証。Prisma・env を `vi.mock()` でモック。
 - **E2E tests:** `client/e2e/tests/*.spec.ts`。Playwright でブラウザ上にフルテスト。`webServer` で server/client を自動起動。
 - **Testing strategy:** 3層構造（単体→統合→E2E）。単体テストは速く多数作成、統合テストはAPI境界を検証、E2Eは実際のブラウザでユーザーフローを検証。
+- **Pre-push hook:** `git push` 時に自動で全テスト（ユニット・カバレッジ・ミューテーション）を実行。失敗でpushをブロック。設定は `.husky/pre-push`。
 
 ## No CI
 
