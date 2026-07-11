@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  displayName  String    @map("display_name")
+  avatarUrl    String?   @map("avatar_url")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  scores    Score[]
+  badges    UserBadge[]
+
+  @@map("users")
+}
+
+model Game {
+  id          String   @id @default(uuid())
+  name        String
+  category    GameCategory
+  description String
+  config      Json
+
+  scores Score[]
+
+  @@map("games")
+}
+
+model Score {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  gameId     String   @map("game_id")
+  score      Int
+  difficulty Difficulty
+  duration   Int
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId, difficulty])
+  @@map("scores")
+}
+
+model Badge {
+  id          String @id @default(uuid())
+  name        String
+  description String
+  criteria    Json
+
+  users UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  userId    String   @map("user_id")
+  badgeId   String   @map("badge_id")
+  earnedAt  DateTime @default(now()) @map("earned_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+  @@map("user_badges")
+}
+
+enum GameCategory {
+  memory
+  calculation
+  vocabulary
+  logic
+  reaction
+}
+
+enum Difficulty {
+  easy
+  normal
+  hard
+}
