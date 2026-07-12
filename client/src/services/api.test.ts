@@ -28,6 +28,16 @@ describe('api interceptors', () => {
     localStorageMock.clear()
   })
 
+  describe('api defaults', () => {
+    it('should have correct baseURL', () => {
+      expect(api.defaults.baseURL).toBe('http://localhost:3001/api')
+    })
+
+    it('should have correct Content-Type header', () => {
+      expect(api.defaults.headers['Content-Type']).toBe('application/json')
+    })
+  })
+
   describe('request interceptor', () => {
     it('should attach Authorization header when token exists', async () => {
       localStorageMock.setItem('token', 'test-token')
@@ -53,6 +63,21 @@ describe('api interceptors', () => {
       const result = interceptor.fulfilled(config)
 
       expect(result.headers.Authorization).toBeUndefined()
+    })
+
+    it('should use Bearer prefix in Authorization header', async () => {
+      localStorageMock.setItem('token', 'my-token')
+
+      const config = {
+        headers: {} as Record<string, string>,
+        url: '/test',
+      }
+
+      const interceptor = (api.interceptors.request as any).handlers[0]
+      const result = interceptor.fulfilled(config)
+
+      expect(result.headers.Authorization).toContain('Bearer ')
+      expect(result.headers.Authorization).toBe('Bearer my-token')
     })
   })
 
@@ -91,6 +116,28 @@ describe('api interceptors', () => {
       expect(localStorageMock.getItem('user')).toBeNull()
     })
 
+    it('should redirect to /login on 401', async () => {
+      const mockHref = vi.fn()
+      Object.defineProperty(window, 'location', {
+        value: { href: '', set href(v: string) { mockHref(v) } },
+        writable: true,
+      })
+
+      const error = {
+        response: { status: 401 },
+      }
+
+      const interceptor = (api.interceptors.response as any).handlers[0]
+
+      try {
+        await interceptor.rejected(error)
+      } catch {
+        // expected
+      }
+
+      expect(mockHref).toHaveBeenCalledWith('/login')
+    })
+
     it('should not redirect on non-401 errors', async () => {
       localStorageMock.setItem('token', 'some-token')
 
@@ -107,6 +154,47 @@ describe('api interceptors', () => {
       }
 
       expect(localStorageMock.getItem('token')).toBe('some-token')
+    })
+
+    it('should remove token from localStorage on 401', async () => {
+      localStorageMock.setItem('token', 'expired')
+
+      const error = { response: { status: 401 } }
+      const interceptor = (api.interceptors.response as any).handlers[0]
+
+      try {
+        await interceptor.rejected(error)
+      } catch {}
+
+      expect(localStorageMock.getItem('token')).toBeNull()
+    })
+
+    it('should remove user from localStorage on 401', async () => {
+      localStorageMock.setItem('user', JSON.stringify({ id: '1' }))
+
+      const error = { response: { status: 401 } }
+      const interceptor = (api.interceptors.response as any).handlers[0]
+
+      try {
+        await interceptor.rejected(error)
+      } catch {}
+
+      expect(localStorageMock.getItem('user')).toBeNull()
+    })
+
+    it('should reject the promise on error', async () => {
+      const error = { response: { status: 500 } }
+      const interceptor = (api.interceptors.response as any).handlers[0]
+
+      await expect(interceptor.rejected(error)).rejects.toBe(error)
+    })
+
+    it('should handle error without response', async () => {
+      const error = { message: 'Network Error' }
+
+      const interceptor = (api.interceptors.response as any).handlers[0]
+
+      await expect(interceptor.rejected(error)).rejects.toBe(error)
     })
   })
 })

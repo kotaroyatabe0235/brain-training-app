@@ -1,10 +1,6 @@
-import type { PartialStrykerOptions } from '@stryker-mutator/core'
-
-const config: PartialStrykerOptions = {
+/** @type {import('@stryker-mutator/core').PartialStrykerOptions} */
+const config = {
   testRunner: 'vitest',
-  vitest: {
-    projectType: 'vitest',
-  },
   coverageAnalysis: 'perTest',
   timeoutMS: 600000,
   thresholds: {
@@ -14,10 +10,12 @@ const config: PartialStrykerOptions = {
   },
   mutate: [
     'src/App.tsx',
-    'src/types/**/*.ts',
-    'src/stores/**/*.ts',
-    'src/services/**/*.ts',
-    'src/components/**/*.tsx',
+    'src/types/*.ts',
+    'src/stores/authStore.ts',
+    'src/stores/scoreStore.ts',
+    'src/services/api.ts',
+    'src/services/scoreApi.ts',
+    'src/components/ProtectedRoute.tsx',
     'src/pages/LoginPage.tsx',
     'src/pages/RegisterPage.tsx',
     'src/pages/HomePage.tsx',

@@ -91,4 +91,50 @@ describe('HomePage', () => {
     expect(screen.getByText('論理思考トレーニング').closest('a')).toHaveAttribute('href', '/games/logic')
     expect(screen.getByText('反応速度トレーニング').closest('a')).toHaveAttribute('href', '/games/reaction')
   })
+
+  it('should display hero subtitle', () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('脳トレアプリへようこそ。ゲームを選んでトレーニングを始めましょう。')).toBeInTheDocument()
+  })
+
+  it('should display game card descriptions', () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('カードマッチ、数字記憶など')).toBeInTheDocument()
+    expect(screen.getByText('速算チャレンジ、電卓パズルなど')).toBeInTheDocument()
+    expect(screen.getByText('類義語チェック、穴埋めクイズなど')).toBeInTheDocument()
+    expect(screen.getByText('パターン認識、推理クイズなど')).toBeInTheDocument()
+    expect(screen.getByText('ターゲットクリック、色文字マッチなど')).toBeInTheDocument()
+  })
+
+  it('should have navigation links', () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('履歴').closest('a')).toHaveAttribute('href', '/stats/history')
+    expect(screen.getByText('ダッシュボード').closest('a')).toHaveAttribute('href', '/stats/dashboard')
+    expect(screen.getByText('ランキング').closest('a')).toHaveAttribute('href', '/stats/ranking')
+  })
+
+  it('should have logout button', () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('button', { name: 'ログアウト' })).toBeInTheDocument()
+  })
 })

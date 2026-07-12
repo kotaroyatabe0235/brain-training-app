@@ -5,6 +5,7 @@ dist/
 .DS_Store
 docker-compose.override.yml
 coverage/
+.stryker-tmp/
 reports/
 stryker-out/
 .check-mutation-score*

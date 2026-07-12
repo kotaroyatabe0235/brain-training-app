@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import StatsDashboardPage from './StatsDashboardPage'
 import { useScoreStore } from '../stores/scoreStore'
@@ -117,5 +117,201 @@ describe('StatsDashboardPage', () => {
 
     expect(screen.getByText('まだプレイ履歴がありません')).toBeInTheDocument()
     expect(screen.getByText('まだスコアがありません')).toBeInTheDocument()
+  })
+
+  it('should display all category names from lookup table', () => {
+    vi.mocked(useScoreStore).mockReturnValue({
+      stats: {
+        totalGamesPlayed: 5,
+        totalDuration: 300,
+        averageScore: 70,
+        categoryAverages: [
+          { category: 'memory', averageScore: 80, gamesPlayed: 1 },
+          { category: 'calculation', averageScore: 80, gamesPlayed: 1 },
+          { category: 'vocabulary', averageScore: 80, gamesPlayed: 1 },
+          { category: 'logic', averageScore: 80, gamesPlayed: 1 },
+          { category: 'reaction', averageScore: 80, gamesPlayed: 1 },
+        ],
+        bestScores: [],
+      },
+      fetchStats: mockFetchStats,
+      isLoading: false,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <StatsDashboardPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('記憶力')).toBeInTheDocument()
+    expect(screen.getByText('計算力')).toBeInTheDocument()
+    expect(screen.getByText('語彙力')).toBeInTheDocument()
+    expect(screen.getByText('論理思考')).toBeInTheDocument()
+    expect(screen.getByText('反応速度')).toBeInTheDocument()
+  })
+
+  it('should show raw category when category is unknown', () => {
+    vi.mocked(useScoreStore).mockReturnValue({
+      stats: {
+        totalGamesPlayed: 1,
+        totalDuration: 60,
+        averageScore: 50,
+        categoryAverages: [
+          { category: 'unknown', averageScore: 50, gamesPlayed: 1 },
+        ],
+        bestScores: [],
+      },
+      fetchStats: mockFetchStats,
+      isLoading: false,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <StatsDashboardPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('unknown')).toBeInTheDocument()
+  })
+
+  it('should display best scores with category names', () => {
+    vi.mocked(useScoreStore).mockReturnValue({
+      stats: {
+        totalGamesPlayed: 1,
+        totalDuration: 60,
+        averageScore: 100,
+        categoryAverages: [],
+        bestScores: [
+          { gameId: '1', gameName: 'パターン認識', category: 'logic', difficulty: 'normal', score: 95 },
+        ],
+      },
+      fetchStats: mockFetchStats,
+      isLoading: false,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <StatsDashboardPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('パターン認識')).toBeInTheDocument()
+    expect(screen.getByText('論理思考')).toBeInTheDocument()
+    expect(screen.getByText('95点')).toBeInTheDocument()
+  })
+
+  it('should show raw category in bestScores for unknown category', () => {
+    vi.mocked(useScoreStore).mockReturnValue({
+      stats: {
+        totalGamesPlayed: 1,
+        totalDuration: 60,
+        averageScore: 100,
+        categoryAverages: [],
+        bestScores: [
+          { gameId: '1', gameName: 'テストゲーム', category: 'unknown', difficulty: 'easy', score: 50 },
+        ],
+      },
+      fetchStats: mockFetchStats,
+      isLoading: false,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <StatsDashboardPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('unknown')).toBeInTheDocument()
+  })
+
+  it('should format duration without hours', () => {
+    vi.mocked(useScoreStore).mockReturnValue({
+      stats: {
+        totalGamesPlayed: 1,
+        totalDuration: 125,
+        averageScore: 80,
+        categoryAverages: [],
+        bestScores: [],
+      },
+      fetchStats: mockFetchStats,
+      isLoading: false,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <StatsDashboardPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('2分5秒')).toBeInTheDocument()
+  })
+
+  it('should format duration with zero seconds', () => {
+    vi.mocked(useScoreStore).mockReturnValue({
+      stats: {
+        totalGamesPlayed: 1,
+        totalDuration: 120,
+        averageScore: 80,
+        categoryAverages: [],
+        bestScores: [],
+      },
+      fetchStats: mockFetchStats,
+      isLoading: false,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <StatsDashboardPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('2分0秒')).toBeInTheDocument()
+  })
+
+  it('should format duration with multiple hours', () => {
+    vi.mocked(useScoreStore).mockReturnValue({
+      stats: {
+        totalGamesPlayed: 1,
+        totalDuration: 7200,
+        averageScore: 80,
+        categoryAverages: [],
+        bestScores: [],
+      },
+      fetchStats: mockFetchStats,
+      isLoading: false,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <StatsDashboardPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('2時間0分')).toBeInTheDocument()
+  })
+
+  it('should display category average scores and play counts', () => {
+    vi.mocked(useScoreStore).mockReturnValue({
+      stats: {
+        totalGamesPlayed: 3,
+        totalDuration: 180,
+        averageScore: 80,
+        categoryAverages: [
+          { category: 'vocabulary', averageScore: 75, gamesPlayed: 3 },
+        ],
+        bestScores: [],
+      },
+      fetchStats: mockFetchStats,
+      isLoading: false,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <StatsDashboardPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('75点（3回プレイ）')).toBeInTheDocument()
   })
 })

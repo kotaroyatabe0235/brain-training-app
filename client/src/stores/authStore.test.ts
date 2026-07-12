@@ -59,6 +59,54 @@ describe('authStore', () => {
       expect(localStorageMock.getItem('token')).toBe('jwt-token')
     })
 
+    it('should set intermediate isLoading state during login', async () => {
+      let resolvePost!: (value: never) => void
+      vi.mocked(api.post).mockImplementation(() => new Promise((resolve) => { resolvePost = resolve as (value: never) => void }) as never)
+
+      const { result } = renderHook(() => useAuthStore())
+
+      act(() => {
+        result.current.login({ email: 'test@example.com', password: 'password123' })
+      })
+
+      expect(result.current.isLoading).toBe(true)
+
+      await act(async () => {
+        resolvePost({ data: { user: { id: '1', email: 'test@example.com', displayName: 'Test' }, token: 'jwt-token' } } as never)
+      })
+
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    it('should set token in localStorage with key "token"', async () => {
+      vi.mocked(api.post).mockResolvedValue({
+        data: { user: { id: '1', email: 'test@example.com', displayName: 'Test' }, token: 'my-jwt' },
+      } as never)
+
+      const { result } = renderHook(() => useAuthStore())
+
+      await act(async () => {
+        await result.current.login({ email: 'test@example.com', password: 'password123' })
+      })
+
+      expect(localStorageMock.getItem('token')).toBe('my-jwt')
+    })
+
+    it('should set user in localStorage with key "user"', async () => {
+      const user = { id: '1', email: 'test@example.com', displayName: 'Test' }
+      vi.mocked(api.post).mockResolvedValue({
+        data: { user, token: 'jwt-token' },
+      } as never)
+
+      const { result } = renderHook(() => useAuthStore())
+
+      await act(async () => {
+        await result.current.login({ email: 'test@example.com', password: 'password123' })
+      })
+
+      expect(JSON.parse(localStorageMock.getItem('user')!)).toEqual(user)
+    })
+
     it('should set error on login failure', async () => {
       vi.mocked(api.post).mockRejectedValue(new Error('ログインに失敗しました'))
 
@@ -91,6 +139,21 @@ describe('authStore', () => {
 
       expect(result.current.error).toBe('ログインに失敗しました')
     })
+
+    it('should clear error before login attempt', async () => {
+      useAuthStore.setState({ error: 'old error' })
+      vi.mocked(api.post).mockResolvedValue({
+        data: { user: { id: '1', email: 'test@example.com', displayName: 'Test' }, token: 'jwt-token' },
+      } as never)
+
+      const { result } = renderHook(() => useAuthStore())
+
+      await act(async () => {
+        await result.current.login({ email: 'test@example.com', password: 'password123' })
+      })
+
+      expect(result.current.error).toBeNull()
+    })
   })
 
   describe('register', () => {
@@ -115,6 +178,41 @@ describe('authStore', () => {
 
       expect(result.current.user).toEqual(mockResponse.data.user)
       expect(localStorageMock.getItem('token')).toBe('jwt-token')
+    })
+
+    it('should set intermediate isLoading state during register', async () => {
+      let resolvePost!: (value: never) => void
+      vi.mocked(api.post).mockImplementation(() => new Promise((resolve) => { resolvePost = resolve as (value: never) => void }) as never)
+
+      const { result } = renderHook(() => useAuthStore())
+
+      act(() => {
+        result.current.register({ email: 'new@example.com', password: 'password123', displayName: 'New' })
+      })
+
+      expect(result.current.isLoading).toBe(true)
+
+      await act(async () => {
+        resolvePost({ data: { user: { id: '1', email: 'new@example.com', displayName: 'New' }, token: 'jwt-token' } } as never)
+      })
+
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    it('should set token and user in localStorage on register', async () => {
+      const user = { id: '2', email: 'new@example.com', displayName: 'New' }
+      vi.mocked(api.post).mockResolvedValue({
+        data: { user, token: 'reg-token' },
+      } as never)
+
+      const { result } = renderHook(() => useAuthStore())
+
+      await act(async () => {
+        await result.current.register({ email: 'new@example.com', password: 'password123', displayName: 'New' })
+      })
+
+      expect(localStorageMock.getItem('token')).toBe('reg-token')
+      expect(JSON.parse(localStorageMock.getItem('user')!)).toEqual(user)
     })
 
     it('should set error on register failure', async () => {
@@ -156,6 +254,20 @@ describe('authStore', () => {
 
       expect(result.current.error).toBe('登録に失敗しました')
     })
+
+    it('should set isLoading to true when register starts', async () => {
+      vi.mocked(api.post).mockResolvedValue({
+        data: { user: { id: '1', email: 'new@example.com', displayName: 'New' }, token: 'jwt-token' },
+      } as never)
+
+      const { result } = renderHook(() => useAuthStore())
+
+      await act(async () => {
+        await result.current.register({ email: 'new@example.com', password: 'password123', displayName: 'New' })
+      })
+
+      expect(result.current.isLoading).toBe(false)
+    })
   })
 
   describe('logout', () => {
@@ -171,6 +283,30 @@ describe('authStore', () => {
 
       expect(result.current.user).toBeNull()
       expect(localStorageMock.getItem('token')).toBeNull()
+      expect(localStorageMock.getItem('user')).toBeNull()
+    })
+
+    it('should remove token from localStorage', () => {
+      localStorageMock.setItem('token', 'my-token')
+
+      const { result } = renderHook(() => useAuthStore())
+
+      act(() => {
+        result.current.logout()
+      })
+
+      expect(localStorageMock.getItem('token')).toBeNull()
+    })
+
+    it('should remove user from localStorage', () => {
+      localStorageMock.setItem('user', JSON.stringify({ id: '1' }))
+
+      const { result } = renderHook(() => useAuthStore())
+
+      act(() => {
+        result.current.logout()
+      })
+
       expect(localStorageMock.getItem('user')).toBeNull()
     })
   })
@@ -213,6 +349,41 @@ describe('authStore', () => {
 
       expect(result.current.user).toBeNull()
       expect(localStorageMock.getItem('token')).toBeNull()
+    })
+
+    it('should set isLoading during loadUser', async () => {
+      localStorageMock.setItem('token', 'valid-token')
+      let resolveGet!: (value: never) => void
+      vi.mocked(api.get).mockImplementation(() => new Promise((resolve) => { resolveGet = resolve as (value: never) => void }) as never)
+
+      const { result } = renderHook(() => useAuthStore())
+
+      act(() => {
+        result.current.loadUser()
+      })
+
+      expect(result.current.isLoading).toBe(true)
+
+      await act(async () => {
+        resolveGet({ data: { id: '1', email: 'test@example.com', displayName: 'Test' } } as never)
+      })
+
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    it('should remove both token and user from localStorage on failure', async () => {
+      localStorageMock.setItem('token', 'bad-token')
+      localStorageMock.setItem('user', JSON.stringify({ id: '1' }))
+      vi.mocked(api.get).mockRejectedValue(new Error('fail'))
+
+      const { result } = renderHook(() => useAuthStore())
+
+      await act(async () => {
+        await result.current.loadUser()
+      })
+
+      expect(localStorageMock.getItem('token')).toBeNull()
+      expect(localStorageMock.getItem('user')).toBeNull()
     })
   })
 
