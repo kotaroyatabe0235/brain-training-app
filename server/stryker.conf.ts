@@ -6,6 +6,7 @@ export default defineConfig({
     projectType: 'vitest',
   },
   coverageAnalysis: 'perTest',
+  timeoutMS: 600000,
   thresholds: {
     high: 80,
     low: 60,
