@@ -6,6 +6,29 @@ echo "========================================="
 echo ""
 
 FAILED=0
+THRESHOLD=80
+
+check_mutation_score() {
+  local dir=$1
+  local output_file=$2
+
+  local score_line=$(grep "^All files" "$output_file")
+  if [ -z "$score_line" ]; then
+    echo "✗ ミューテーションスコアをパースできませんでした。"
+    return 1
+  fi
+
+  local score=$(echo "$score_line" | awk -F'|' '{gsub(/ /, "", $2); print $2}')
+  echo "ミューテーションスコア: ${score}% (閾値: ${THRESHOLD}%)"
+
+  if [ "$(echo "$score < $THRESHOLD" | bc)" -eq 1 ]; then
+    echo "✗ スコア ${score}% が閾値 ${THRESHOLD}% を下回っています。"
+    return 1
+  fi
+
+  echo "✓ スコア ${score}% は閾値 ${THRESHOLD}%以上です。"
+  return 0
+}
 
 # ---- Server ----
 echo "[Server] ユニットテスト実行中..."
@@ -31,22 +54,25 @@ fi
 
 echo ""
 echo "[Server] ミューテーションテスト実行中..."
-cd server && npm run test:mutation || FAILED=1
+cd server && npm run test:mutation > /tmp/server-mutation-output.txt 2>&1
+MUTATION_EXIT=$?
 cd ..
 
-if [ $FAILED -eq 1 ]; then
+if [ $MUTATION_EXIT -ne 0 ]; then
+  cat /tmp/server-mutation-output.txt
   echo ""
   echo "✗ Server ミューテーションテスト実行失敗。pushを中止します。"
   exit 1
 fi
 
+tail -30 /tmp/server-mutation-output.txt
+
 echo ""
 echo "[Server] ミューテーションスコア確認中..."
-node check-mutation-score.js server 80 || FAILED=1
-
-if [ $FAILED -eq 1 ]; then
+check_mutation_score server /tmp/server-mutation-output.txt
+if [ $? -ne 0 ]; then
   echo ""
-  echo "✗ Server ミューテーションスコア80%未達。pushを中止します。"
+  echo "✗ Server ミューテーションスコア${THRESHOLD}%未達。pushを中止します。"
   exit 1
 fi
 
@@ -75,22 +101,25 @@ fi
 
 echo ""
 echo "[Client] ミューテーションテスト実行中..."
-cd client && npm run test:mutation || FAILED=1
+cd client && npm run test:mutation > /tmp/client-mutation-output.txt 2>&1
+MUTATION_EXIT=$?
 cd ..
 
-if [ $FAILED -eq 1 ]; then
+if [ $MUTATION_EXIT -ne 0 ]; then
+  cat /tmp/client-mutation-output.txt
   echo ""
   echo "✗ Client ミューテーションテスト実行失敗。pushを中止します。"
   exit 1
 fi
 
+tail -30 /tmp/client-mutation-output.txt
+
 echo ""
 echo "[Client] ミューテーションスコア確認中..."
-node check-mutation-score.js client 80 || FAILED=1
-
-if [ $FAILED -eq 1 ]; then
+check_mutation_score client /tmp/client-mutation-output.txt
+if [ $? -ne 0 ]; then
   echo ""
-  echo "✗ Client ミューテーションスコア80%未達。pushを中止します。"
+  echo "✗ Client ミューテーションスコア${THRESHOLD}%未達。pushを中止します。"
   exit 1
 fi
 
