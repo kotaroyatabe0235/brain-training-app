@@ -17,6 +17,6 @@ export default defineConfig({
     '!src/main.tsx',
     '!src/vite-env.d.ts',
   ],
-  reporters: ['html', 'clear-text', 'progress'],
+  reporters: ['html', 'json', 'clear-text', 'progress'],
   concurrency: 2,
 })

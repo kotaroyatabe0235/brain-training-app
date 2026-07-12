@@ -11,7 +11,7 @@ export default defineConfig({
     low: 60,
     break: 80,
   },
-  mutate: ['src/**/*.ts', '!src/**/*.test.ts'],
-  reporters: ['html', 'clear-text', 'progress'],
+  mutate: ['src/**/*.ts', '!src/**/*.test.ts', '!src/index.ts'],
+  reporters: ['html', 'json', 'clear-text', 'progress'],
   concurrency: 2,
 })

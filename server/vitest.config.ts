@@ -11,8 +11,6 @@ export default defineConfig({
       exclude: [
         'src/**/*.test.ts',
         'src/index.ts',
-        'src/config/prisma.ts',
-        'src/config/env.ts',
       ],
       thresholds: {
         lines: 80,

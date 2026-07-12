@@ -15,7 +15,8 @@
     "test:coverage": "vitest run --coverage",
     "test:mutation": "stryker run",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:coverage": "playwright test && nyc merge coverage/e2e coverage/e2e/merged.json && nyc report --reporter=text --reporter=html"
   },
   "dependencies": {
     "axios": "^1.18.1",

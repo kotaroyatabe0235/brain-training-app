@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test'
+import { collectCoverage, saveCoverage } from '../helpers/coverage'
 
 test.describe('ホームページ', () => {
+  test.afterEach(async () => {
+    await collectCoverage()
+  })
+
   test('should display user name and welcome message', async ({ page }) => {
     const email = `home-${Date.now()}@example.com`
 
@@ -47,4 +52,25 @@ test.describe('ホームページ', () => {
 
     await expect(page.getByText('Brain Training App')).toBeVisible()
   })
+
+  test('should navigate to game category from homepage', async ({ page }) => {
+    const email = `nav-${Date.now()}@example.com`
+
+    await page.goto('/register')
+    await page.getByPlaceholder('表示名').fill('ナビテスト')
+    await page.getByPlaceholder('メールアドレス').fill(email)
+    await page.getByPlaceholder('パスワード（8文字以上）').fill('password123')
+    await page.getByPlaceholder('パスワード確認').fill('password123')
+    await page.getByRole('button', { name: '登録' }).click()
+    await expect(page).toHaveURL('/')
+
+    // 記憶力トレーニングカードをクリック
+    await page.getByText('記憶力トレーニング').click()
+    await expect(page).toHaveURL('/games/memory')
+    await expect(page.getByText('カードマッチ')).toBeVisible()
+  })
+})
+
+test.afterAll(async () => {
+  await saveCoverage()
 })

@@ -3,3 +3,8 @@ dist/
 .env
 *.log
 .DS_Store
+docker-compose.override.yml
+coverage/
+reports/
+stryker-out/
+.check-mutation-score*

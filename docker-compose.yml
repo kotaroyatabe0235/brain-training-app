@@ -1,11 +1,12 @@
 services:
   db:
     image: postgres:16-alpine
+    container_name: brain-training-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: brain_training_app
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: brain_training_app
     ports:
       - "5432:5432"
     volumes:
@@ -13,33 +14,44 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 5
 
   server:
-    build: ./server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: brain-training-server
     restart: unless-stopped
     ports:
       - "3001:3001"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/brain_training_app?schema=public
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/brain_training_app?schema=public"
+      JWT_SECRET: "${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}"
       JWT_EXPIRES_IN: "7d"
       PORT: 3001
       NODE_ENV: development
     depends_on:
       db:
         condition: service_healthy
+    command: sh -c "npx prisma db push && npx tsx prisma/seed.ts && npm run dev"
+    volumes:
+      - ./server/src:/app/src
 
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
+    container_name: brain-training-client
     restart: unless-stopped
     ports:
       - "5173:5173"
+    environment:
+      VITE_API_URL: "http://localhost:3001"
     depends_on:
       - server
+    volumes:
+      - ./client/src:/app/src
 
 volumes:
   pgdata:

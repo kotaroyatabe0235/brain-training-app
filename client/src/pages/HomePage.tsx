@@ -1,4 +1,11 @@
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
+
+interface GameCardProps {
+  title: string
+  description: string
+  href: string
+}
 
 export default function HomePage() {
   const { user, logout } = useAuthStore()
@@ -11,6 +18,17 @@ export default function HomePage() {
             Brain Training App
           </h1>
           <div className="flex items-center space-x-4">
+            <nav className="flex gap-4 mr-4">
+              <Link to="/stats/history" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                履歴
+              </Link>
+              <Link to="/stats/dashboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                ダッシュボード
+              </Link>
+              <Link to="/stats/ranking" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                ランキング
+              </Link>
+            </nav>
             <span className="text-gray-600 dark:text-gray-300">
               {user?.displayName}
             </span>
@@ -34,11 +52,11 @@ export default function HomePage() {
             </p>
           </div>
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <GameCard title="記憶力トレーニング" description="カードマッチ、数字記憶など" />
-            <GameCard title="計算力トレーニング" description="速算チャレンジ、電卓パズルなど" />
-            <GameCard title="語彙力トレーニング" description="類義語チェック、穴埋めクイズなど" />
-            <GameCard title="論理思考トレーニング" description="パターン認識、推理クイズなど" />
-            <GameCard title="反応速度トレーニング" description="ターゲットクリック、色文字マッチなど" />
+            <GameCard title="記憶力トレーニング" description="カードマッチ、数字記憶など" href="/games/memory" />
+            <GameCard title="計算力トレーニング" description="速算チャレンジ、電卓パズルなど" href="/games/calculation" />
+            <GameCard title="語彙力トレーニング" description="類義語チェック、穴埋めクイズなど" href="/games/vocabulary" />
+            <GameCard title="論理思考トレーニング" description="パターン認識、推理クイズなど" href="/games/logic" />
+            <GameCard title="反応速度トレーニング" description="ターゲットクリック、色文字マッチなど" href="/games/reaction" />
           </div>
         </div>
       </main>
@@ -46,11 +64,14 @@ export default function HomePage() {
   )
 }
 
-function GameCard({ title, description }: { title: string; description: string }) {
+function GameCard({ title, description, href }: GameCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer">
+    <Link
+      to={href}
+      className="block bg-white dark:bg-gray-800 shadow rounded-lg p-6 hover:shadow-lg transition-shadow"
+    >
       <h3 className="text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
       <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{description}</p>
-    </div>
+    </Link>
   )
 }

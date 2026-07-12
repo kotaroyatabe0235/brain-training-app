@@ -25,6 +25,14 @@ export default defineConfig({
     },
   ],
   projects: [
-    { name: 'chromium', use: { browserName: 'chromium' } },
+    {
+      name: 'chromium',
+      use: {
+        browserName: 'chromium',
+        launchOptions: {
+          args: ['--enable-precise-memory-info'],
+        },
+      },
+    },
   ],
 })

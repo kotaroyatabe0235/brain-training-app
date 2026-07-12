@@ -36,7 +36,17 @@ cd ..
 
 if [ $FAILED -eq 1 ]; then
   echo ""
-  echo "✗ Server ミューテーションスコア95%未達。pushを中止します。"
+  echo "✗ Server ミューテーションテスト実行失敗。pushを中止します。"
+  exit 1
+fi
+
+echo ""
+echo "[Server] ミューテーションスコア確認中..."
+node check-mutation-score.js server 80 || FAILED=1
+
+if [ $FAILED -eq 1 ]; then
+  echo ""
+  echo "✗ Server ミューテーションスコア80%未達。pushを中止します。"
   exit 1
 fi
 
@@ -70,7 +80,17 @@ cd ..
 
 if [ $FAILED -eq 1 ]; then
   echo ""
-  echo "✗ Client ミューテーションスコア95%未達。pushを中止します。"
+  echo "✗ Client ミューテーションテスト実行失敗。pushを中止します。"
+  exit 1
+fi
+
+echo ""
+echo "[Client] ミューテーションスコア確認中..."
+node check-mutation-score.js client 80 || FAILED=1
+
+if [ $FAILED -eq 1 ]; then
+  echo ""
+  echo "✗ Client ミューテーションスコア80%未達。pushを中止します。"
   exit 1
 fi
 

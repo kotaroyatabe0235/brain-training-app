@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 dotenv.config()
 
-const envSchema = z.object({
+export const envSchema = z.object({
   DATABASE_URL: z.string(),
   JWT_SECRET: z.string(),
   JWT_EXPIRES_IN: z.string().default('7d'),

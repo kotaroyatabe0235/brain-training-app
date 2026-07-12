@@ -277,6 +277,134 @@ describe('GET /api/auth/me', () => {
   })
 })
 
+describe('POST /api/auth/register - boundary values', () => {
+  it('should return 400 for 7-char password (below min 8)', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'test@example.com',
+        password: '1234567',
+        displayName: 'Test User',
+      })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('should return 201 for 8-char password (at min 8)', async () => {
+    const { prisma: freshPrisma } = await import('../config/prisma.js')
+    vi.mocked(freshPrisma.user.findUnique).mockResolvedValue(null)
+    vi.mocked(freshPrisma.user.create).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      displayName: 'Test User',
+      createdAt: new Date('2025-01-01'),
+    } as never)
+
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'test@example.com',
+        password: '12345678',
+        displayName: 'Test User',
+      })
+
+    expect(res.status).toBe(201)
+  })
+
+  it('should return 400 for 51-char displayName (above max 50)', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'test@example.com',
+        password: 'password123',
+        displayName: 'a'.repeat(51),
+      })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('should return 201 for 50-char displayName (at max 50)', async () => {
+    const { prisma: freshPrisma } = await import('../config/prisma.js')
+    vi.mocked(freshPrisma.user.findUnique).mockResolvedValue(null)
+    vi.mocked(freshPrisma.user.create).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      displayName: 'a'.repeat(50),
+      createdAt: new Date('2025-01-01'),
+    } as never)
+
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'test@example.com',
+        password: 'password123',
+        displayName: 'a'.repeat(50),
+      })
+
+    expect(res.status).toBe(201)
+  })
+
+  it('should return 400 for empty password (below min 1)', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'test@example.com',
+        password: '',
+        displayName: 'Test User',
+      })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('should return 400 for invalid email format', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'not-an-email',
+        password: 'password123',
+        displayName: 'Test User',
+      })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('should return 400 for empty displayName (below min 1)', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'test@example.com',
+        password: 'password123',
+        displayName: '',
+      })
+
+    expect(res.status).toBe(400)
+  })
+})
+
+describe('POST /api/auth/login - boundary values', () => {
+  it('should return 400 for empty login password', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'test@example.com',
+        password: '',
+      })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('should return 400 for invalid login email format', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'invalid-email',
+        password: 'password123',
+      })
+
+    expect(res.status).toBe(400)
+  })
+})
+
 describe('GET /health', () => {
   it('should return health status', async () => {
     const res = await request(app).get('/health')

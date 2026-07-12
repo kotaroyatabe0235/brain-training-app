@@ -38,25 +38,38 @@ describe('authenticate middleware', () => {
 
     expect(mockNext).toHaveBeenCalled()
     expect(mockReq.userId).toBe('123')
+    expect(verifyToken).toHaveBeenCalledWith('valid-token')
   })
 
   it('should return 401 for missing authorization header', () => {
     authenticate(mockReq, mockRes, mockNext)
 
     expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith({ error: '認証トークンがありません' })
     expect(mockNext).not.toHaveBeenCalled()
   })
 
-  it('should return 401 for invalid token format', () => {
+  it('should return 401 for empty authorization header', () => {
+    mockReq.headers.authorization = ''
+
+    authenticate(mockReq, mockRes, mockNext)
+
+    expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith({ error: '認証トークンがありません' })
+    expect(mockNext).not.toHaveBeenCalled()
+  })
+
+  it('should return 401 for invalid token format (no Bearer prefix)', () => {
     mockReq.headers.authorization = 'InvalidFormat'
 
     authenticate(mockReq, mockRes, mockNext)
 
     expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith({ error: '認証トークンがありません' })
     expect(mockNext).not.toHaveBeenCalled()
   })
 
-  it('should return 401 for expired/invalid token', () => {
+  it('should return 401 for AuthError from verifyToken', () => {
     mockReq.headers.authorization = 'Bearer invalid-token'
     vi.mocked(verifyToken).mockImplementation(() => {
       throw new AuthError('認証に失敗しました', 401)
@@ -65,6 +78,30 @@ describe('authenticate middleware', () => {
     authenticate(mockReq, mockRes, mockNext)
 
     expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith({ error: '認証に失敗しました' })
     expect(mockNext).not.toHaveBeenCalled()
+  })
+
+  it('should return 401 for generic Error from verifyToken', () => {
+    mockReq.headers.authorization = 'Bearer some-token'
+    vi.mocked(verifyToken).mockImplementation(() => {
+      throw new Error('unexpected error')
+    })
+
+    authenticate(mockReq, mockRes, mockNext)
+
+    expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith({ error: '認証に失敗しました' })
+    expect(mockNext).not.toHaveBeenCalled()
+  })
+
+  it('should extract token from Bearer header', () => {
+    mockReq.headers.authorization = 'Bearer my-jwt-token'
+    vi.mocked(verifyToken).mockReturnValue({ userId: '456' })
+
+    authenticate(mockReq, mockRes, mockNext)
+
+    expect(verifyToken).toHaveBeenCalledWith('my-jwt-token')
+    expect(mockReq.userId).toBe('456')
   })
 })

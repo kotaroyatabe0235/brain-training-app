@@ -77,4 +77,18 @@ describe('HomePage', () => {
 
     expect(screen.getByText('Brain Training App')).toBeInTheDocument()
   })
+
+  it('should have links to game categories', () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('記憶力トレーニング').closest('a')).toHaveAttribute('href', '/games/memory')
+    expect(screen.getByText('計算力トレーニング').closest('a')).toHaveAttribute('href', '/games/calculation')
+    expect(screen.getByText('語彙力トレーニング').closest('a')).toHaveAttribute('href', '/games/vocabulary')
+    expect(screen.getByText('論理思考トレーニング').closest('a')).toHaveAttribute('href', '/games/logic')
+    expect(screen.getByText('反応速度トレーニング').closest('a')).toHaveAttribute('href', '/games/reaction')
+  })
 })
