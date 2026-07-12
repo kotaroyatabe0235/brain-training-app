@@ -75,6 +75,22 @@ describe('authStore', () => {
       expect(result.current.error).toBe('ログインに失敗しました')
       expect(result.current.user).toBeNull()
     })
+
+    it('should use default message on non-Error login failure', async () => {
+      vi.mocked(api.post).mockRejectedValue('unknown error')
+
+      const { result } = renderHook(() => useAuthStore())
+
+      await act(async () => {
+        try {
+          await result.current.login({ email: 'test@example.com', password: 'wrong' })
+        } catch {
+          // expected
+        }
+      })
+
+      expect(result.current.error).toBe('ログインに失敗しました')
+    })
   })
 
   describe('register', () => {
@@ -103,6 +119,26 @@ describe('authStore', () => {
 
     it('should set error on register failure', async () => {
       vi.mocked(api.post).mockRejectedValue(new Error('登録に失敗しました'))
+
+      const { result } = renderHook(() => useAuthStore())
+
+      await act(async () => {
+        try {
+          await result.current.register({
+            email: 'new@example.com',
+            password: 'password123',
+            displayName: 'New User',
+          })
+        } catch {
+          // expected
+        }
+      })
+
+      expect(result.current.error).toBe('登録に失敗しました')
+    })
+
+    it('should use default message on non-Error register failure', async () => {
+      vi.mocked(api.post).mockRejectedValue('unknown error')
 
       const { result } = renderHook(() => useAuthStore())
 
