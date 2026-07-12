@@ -49,6 +49,7 @@ describe('gameController', () => {
       await gameController.getAllGames(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 
@@ -69,6 +70,7 @@ describe('gameController', () => {
       await gameController.getGameById(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'not found' })
     })
 
     it('should return 500 on unexpected error', async () => {
@@ -77,6 +79,7 @@ describe('gameController', () => {
       await gameController.getGameById(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 
@@ -96,6 +99,7 @@ describe('gameController', () => {
       await gameController.getGamesByCategory(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 })

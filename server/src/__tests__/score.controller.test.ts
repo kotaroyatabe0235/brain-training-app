@@ -47,6 +47,7 @@ describe('scoreController', () => {
     it('should return 401 if no userId', async () => {
       await scoreController.submitScore(mockReq, mockRes)
       expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: '認証が必要です' })
     })
 
     it('should create score and return 201', async () => {
@@ -69,6 +70,7 @@ describe('scoreController', () => {
       await scoreController.submitScore(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'game not found' })
     })
 
     it('should return 400 for validation errors', async () => {
@@ -79,6 +81,7 @@ describe('scoreController', () => {
       await scoreController.submitScore(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'validation' })
     })
 
     it('should return 500 on unexpected error', async () => {
@@ -89,6 +92,7 @@ describe('scoreController', () => {
       await scoreController.submitScore(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 
@@ -96,6 +100,7 @@ describe('scoreController', () => {
     it('should return 401 if no userId', async () => {
       await scoreController.getUserScores(mockReq, mockRes)
       expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: '認証が必要です' })
     })
 
     it('should return scores', async () => {
@@ -114,6 +119,7 @@ describe('scoreController', () => {
       await scoreController.getUserScores(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 
@@ -121,6 +127,7 @@ describe('scoreController', () => {
     it('should return 401 if no userId', async () => {
       await scoreController.getUserScoresByGame(mockReq, mockRes)
       expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: '認証が必要です' })
     })
 
     it('should return scores for game', async () => {
@@ -141,6 +148,7 @@ describe('scoreController', () => {
       await scoreController.getUserScoresByGame(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 
@@ -160,6 +168,7 @@ describe('scoreController', () => {
       await scoreController.getRanking(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 
@@ -167,6 +176,7 @@ describe('scoreController', () => {
     it('should return 401 if no userId', async () => {
       await scoreController.getStats(mockReq, mockRes)
       expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: '認証が必要です' })
     })
 
     it('should return stats', async () => {
@@ -185,6 +195,7 @@ describe('scoreController', () => {
       await scoreController.getStats(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 
@@ -192,6 +203,7 @@ describe('scoreController', () => {
     it('should return 401 if no userId', async () => {
       await scoreController.getBestScores(mockReq, mockRes)
       expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: '認証が必要です' })
     })
 
     it('should return best scores', async () => {
@@ -210,6 +222,7 @@ describe('scoreController', () => {
       await scoreController.getBestScores(mockReq, mockRes)
 
       expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'サーバーエラーが発生しました' })
     })
   })
 })
